@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from dataclasses import dataclass
 
+_logger = logging.getLogger(__name__)
 
 SUPPORTED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'}
 MAX_IMAGE_SIZE_MB = 10
@@ -16,7 +17,7 @@ class ImageObject:
     media_type: str
 
 
-def validate_image_file(file_path: Path, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
+def validate_image_file(file_path: Path) -> Tuple[bool, Optional[str]]:
     if file_path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
         return False, f"Unsupported file extension: {file_path.suffix}"
 
@@ -30,11 +31,11 @@ def validate_image_file(file_path: Path, logger: logging.Logger) -> Tuple[bool, 
     return True, None
 
 
-def load_image_as_base64(file_path: Path, logger: logging.Logger) -> Optional[ImageObject]:
+def load_image_as_base64(file_path: Path) -> Optional[ImageObject]:
     try:
-        is_valid, error_msg = validate_image_file(file_path, logger)
+        is_valid, error_msg = validate_image_file(file_path)
         if not is_valid:
-            logger.warning(f"Skipping {file_path.name}: {error_msg}")
+            _logger.warning(f"Skipping {file_path.name}: {error_msg}")
             return None
 
         with open(file_path, 'rb') as f:
@@ -49,14 +50,14 @@ def load_image_as_base64(file_path: Path, logger: logging.Logger) -> Optional[Im
             )
 
     except OSError as e:
-        logger.error(f"Failed to read {file_path.name}: {str(e)}")
+        _logger.error(f"Failed to read {file_path.name}: {str(e)}")
         return None
     except Exception as e:
-        logger.error(f"Unexpected error loading {file_path.name}: {str(e)}")
+        _logger.error(f"Unexpected error loading {file_path.name}: {str(e)}")
         return None
 
 
-def load_images_from_folder(folder_path: str, logger: logging.Logger) -> List[ImageObject]:
+def load_images_from_folder(folder_path: str) -> List[ImageObject]:
     images_path = Path(folder_path)
 
     if not images_path.exists():
@@ -69,7 +70,7 @@ def load_images_from_folder(folder_path: str, logger: logging.Logger) -> List[Im
 
     for img_file in sorted(images_path.iterdir()):
         if img_file.is_file():
-            image_obj = load_image_as_base64(img_file, logger)
+            image_obj = load_image_as_base64(img_file)
             if image_obj:
                 images.append(image_obj)
 

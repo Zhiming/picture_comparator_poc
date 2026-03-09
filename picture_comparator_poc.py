@@ -1,4 +1,5 @@
 import os
+import logging
 import asyncio
 from dotenv import load_dotenv
 from langchain_aws import ChatBedrockConverse
@@ -6,8 +7,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser
 from image_loader import load_images_from_folder
-from logger import setup_logging
 from model import ImageQuality
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 load_dotenv()
 
@@ -29,9 +35,8 @@ llm = ChatBedrockConverse(
 parser = JsonOutputParser(pydantic_object=ImageQuality)
 
 async def process_images():
-    logger = setup_logging()
     # Get all images from the images folder
-    images = load_images_from_folder("images", logger)
+    images = load_images_from_folder("images")
 
     for image in images:
         system_prompt = SystemMessage("Use ImageQualityEnum to determine each picture's quality")
