@@ -5,7 +5,8 @@ from langchain_aws import ChatBedrockConverse
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser
-from image_loader import get_images_as_base64
+from image_loader import load_images_from_folder
+from logger import setup_logging
 from model import ImageQuality
 
 load_dotenv()
@@ -28,8 +29,9 @@ llm = ChatBedrockConverse(
 parser = JsonOutputParser(pydantic_object=ImageQuality)
 
 async def process_images():
+    logger = setup_logging()
     # Get all images from the images folder
-    images = get_images_as_base64("images")
+    images = load_images_from_folder("images", logger)
 
     for image in images:
         system_prompt = SystemMessage("Use ImageQualityEnum to determine each picture's quality")
